@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# media-tracker
 
-## Getting Started
+Système de traçage et analytics pour les médias ONLYMATT / OM43.
 
-First, run the development server:
+Chaque fichier media reçoit un UUID unique + une URL de tracking injectée dans les métadonnées XMP via le script `tracker.command`. Quand quelqu'un consulte l'image/vidéo, le endpoint `/api/track/{UUID}` log l'événement (IP, user-agent, pays, date).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Usage
+
+### 1. Injecter les métadonnées (tracker.command)
+
+Copie `tracker.command` dans le dossier contenant tes médias, puis lance-le. Chaque fichier reçoit un sidecar XMP avec :
+- UUID unique
+- URL de tracking : `https://media-tracker-nu-ten.vercel.app/api/track/{UUID}`
+- Artist, Copyright, réseaux sociaux, contact
+
+### 2. Consulter les analytics
+
+```
+GET https://media-tracker-nu-ten.vercel.app/api/admin
+Header: x-admin-secret: {ADMIN_SECRET}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Réponse :
+```json
+{
+  "total_events": 42,
+  "media": [
+    {
+      "media_uuid": "abc-123",
+      "view_count": 15,
+      "first_view": "2026-07-24 10:00:00",
+      "last_view": "2026-07-24 23:59:59",
+      "unique_ips": 8
+    }
+  ]
+}
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Pour les détails d'un UUID spécifique :
+```
+GET /api/admin?uuid={UUID}
+Header: x-admin-secret: {ADMIN_SECRET}
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variables d'environnement
 
-## Learn More
+| Variable | Description |
+|---|---|
+| `TURSO_DATABASE_URL` | URL de la DB Turso (`media-tracker-onlymatt43`) |
+| `TURSO_AUTH_TOKEN` | Token d'auth Turso |
+| `ADMIN_SECRET` | Secret pour accéder aux analytics (`/api/admin`) |
 
-To learn more about Next.js, take a look at the following resources:
+## Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js 16 (App Router)
+- Turso (libSQL)
+- Déployé sur Vercel
