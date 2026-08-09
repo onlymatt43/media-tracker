@@ -52,9 +52,14 @@ export async function ensureMediaTable(db: any) {
       url TEXT NOT NULL,
       type TEXT, title TEXT, category TEXT,
       owner TEXT, collaborators TEXT,
+      stream_lib TEXT, stream_guid TEXT,
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
+  // migration douce des colonnes d'embed
+  for (const col of ['stream_lib TEXT', 'stream_guid TEXT']) {
+    try { await db.execute(`ALTER TABLE media ADD COLUMN ${col}`); } catch { /* existe déjà */ }
+  }
 }
 
 export async function logEvent(db: any, req: Request, uuid: string, url?: URL) {
