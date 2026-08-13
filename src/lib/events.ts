@@ -37,7 +37,10 @@ export async function ensureEventsTable(db: any) {
   `);
   // migration douce : ajoute les colonnes manquantes sur une table déjà existante
   for (const col of ['device TEXT', 'os TEXT', 'browser TEXT', 'is_bot INTEGER DEFAULT 0',
-                     'region TEXT', 'lang TEXT', 'source TEXT']) {
+                     'region TEXT', 'lang TEXT', 'source TEXT',
+                     // v2 analytics (plays/watch-time) : les lignes existantes (pixel/clics)
+                     // restent event_type='view' via ce défaut, rétro-compatibles.
+                     "event_type TEXT DEFAULT 'view'", 'position REAL', 'duration REAL', 'session_id TEXT']) {
     try { await db.execute(`ALTER TABLE tracking_events ADD COLUMN ${col}`); } catch { /* existe déjà */ }
   }
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_te_uuid ON tracking_events(media_uuid)`);
@@ -62,7 +65,9 @@ export async function ensureMediaTable(db: any) {
   }
 }
 
-export async function logEvent(db: any, req: Request, uuid: string, url?: URL) {
+export type CustomEvent = { event_type: string; position?: number | null; duration?: number | null; session_id?: string | null };
+
+export async function logEvent(db: any, req: Request, uuid: string, url?: URL, custom?: CustomEvent) {
   const h = (k: string) => req.headers.get(k) || '';
   const ua = h('user-agent');
   const { is_bot, os, device, browser } = parseUA(ua);
@@ -71,11 +76,14 @@ export async function logEvent(db: any, req: Request, uuid: string, url?: URL) {
   try {
     await db.execute({
       sql: `INSERT INTO tracking_events
-            (media_uuid, ip, user_agent, device, os, browser, is_bot, country, region, city, referer, lang, source)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            (media_uuid, ip, user_agent, device, os, browser, is_bot, country, region, city, referer, lang, source,
+             event_type, position, duration, session_id)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       args: [uuid, ip, ua, device, os, browser, is_bot ? 1 : 0,
              h('x-vercel-ip-country'), h('x-vercel-ip-country-region'), h('x-vercel-ip-city'),
-             h('referer'), h('accept-language').split(',')[0], source],
+             h('referer'), h('accept-language').split(',')[0], source,
+             custom?.event_type ?? 'view', custom?.position ?? null, custom?.duration ?? null,
+             custom?.session_id ?? null],
     });
   } catch (e) {
     console.error('[events] insert error:', e);
