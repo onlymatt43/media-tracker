@@ -90,3 +90,13 @@ export function siteMetadata() {
     ...(icons ? { icons } : {}),
   };
 }
+
+// Legal identity shown on user-facing legal pages (src/app/privacy). Both are
+// optional: a page renders nothing for an unset value rather than a placeholder.
+export function siteOperatorName() {
+  return env('SITE_OPERATOR_NAME');
+}
+
+export function siteContactEmail() {
+  return env('SITE_CONTACT_EMAIL');
+}

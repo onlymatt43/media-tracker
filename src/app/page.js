@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { siteName } from "@/lib/site-config";
 
 // Minimal entry page: the application UI lives in the static dashboard.
@@ -11,6 +12,9 @@ export default function Home() {
       >
         Open the dashboard
       </a>
+      <footer className="mt-8 text-sm opacity-70">
+        <Link href="/privacy" className="underline">Privacy · Confidentialité</Link>
+      </footer>
     </main>
   );
 }
