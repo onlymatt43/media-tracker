@@ -46,6 +46,12 @@ export function siteOgImageUrl() {
   return env('SITE_OG_IMAGE_URL');
 }
 
+// Base URL of the shared favicon set (no trailing slash), or null when unset.
+export function siteFaviconBaseUrl() {
+  const base = env('SITE_FAVICON_BASE_URL');
+  return base ? base.replace(/\/$/, '') : null;
+}
+
 // Base URL of the shared favicon set; file names follow the ecosystem layout.
 export function siteIcons() {
   const base = env('SITE_FAVICON_BASE_URL');
