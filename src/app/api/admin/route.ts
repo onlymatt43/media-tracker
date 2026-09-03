@@ -48,11 +48,12 @@ function withEngagement(row: any) {
   };
 }
 
-// GET /api/admin?secret=...            → tableau de bord global (humains, par source/appareil/pays…)
-// GET /api/admin?secret=...&uuid=...   → derniers événements + engagement d'un média
-// &bots=1 pour inclure les bots (exclus par défaut)
+// GET /api/admin             → global dashboard (humans, by source/device/country…)
+// GET /api/admin?uuid=...    → latest events + engagement for one media item
+// &bots=1 to include bots (excluded by default)
+// Auth: `x-admin-secret` header only (query strings end up in logs and browser history).
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret') || req.nextUrl.searchParams.get('secret');
+  const secret = req.headers.get('x-admin-secret');
   if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
