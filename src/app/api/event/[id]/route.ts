@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureEventsTable, logEvent } from '../../../../lib/events';
 import { getDb } from '../../../../lib/db';
 
-// Beacon d'engagement vidéo (v2 analytics) : navigator.sendBeacon(..., Blob text/plain)
-// depuis om-track.js, sur play/pause/ended et le franchissement de 25/50/75/100 %.
-// Payload attendu : { event: "play"|"pause"|"ended"|"q25"|"q50"|"q75"|"q100", position, duration, session }.
-// CORS : sendBeacon + Blob "text/plain" est une requête simple, pas de préflight — la
-// réponse n'a rien à exposer (204), donc rien à autoriser explicitement côté headers.
-// Non-bloquant : un payload invalide ou une erreur d'insert ne remonte jamais d'erreur
-// au client (même posture que le pixel /api/track).
+// Video engagement beacon (v2 analytics): navigator.sendBeacon(..., Blob text/plain)
+// sent by om-track.js on play/pause/ended and when crossing 25/50/75/100 %.
+// Expected payload: { event: "play"|"pause"|"ended"|"q25"|"q50"|"q75"|"q100", position, duration, session }.
+// CORS: sendBeacon + Blob "text/plain" is a simple request, no preflight — the
+// response exposes nothing (204), so nothing needs to be allowed explicitly via headers.
+// Non-blocking: an invalid payload or an insert error never surfaces an error
+// to the client (same stance as the /api/track pixel).
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

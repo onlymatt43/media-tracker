@@ -9,7 +9,7 @@ async function getDb() {
   return createClient({ url: TURSO_URL!, authToken: TURSO_TOKEN });
 }
 
-// Pixel de tracking : <img src="/api/track/<uuid>"> sur une page HTML (vue passive).
+// Tracking pixel: <img src="/api/track/<uuid>"> on an HTML page (passive view).
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

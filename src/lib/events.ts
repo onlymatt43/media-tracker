@@ -1,6 +1,6 @@
-// Capture d'événement riche, partagée par le pixel (/api/track) et le lien tracké (/m).
-// Enregistre tout ce qui est possible au moment du clic : appareil, OS, navigateur,
-// géo, source/UTM, referer, langue, bot/humain.
+// Rich event capture, shared by the pixel (/api/track) and the tracked link (/m).
+// Records everything available at click time: device, OS, browser,
+// geo, source/UTM, referer, language, bot/human.
 
 export function parseUA(ua: string) {
   const u = (ua || '').toLowerCase();
@@ -35,13 +35,13 @@ export async function ensureEventsTable(db: any) {
       viewed_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
-  // migration douce : ajoute les colonnes manquantes sur une table déjà existante
+  // soft migration: adds the missing columns to an already existing table
   for (const col of ['device TEXT', 'os TEXT', 'browser TEXT', 'is_bot INTEGER DEFAULT 0',
                      'region TEXT', 'lang TEXT', 'source TEXT',
-                     // v2 analytics (plays/watch-time) : les lignes existantes (pixel/clics)
-                     // restent event_type='view' via ce défaut, rétro-compatibles.
+                     // v2 analytics (plays/watch-time): existing rows (pixel/clicks)
+                     // stay event_type='view' through this default, backward-compatible.
                      "event_type TEXT DEFAULT 'view'", 'position REAL', 'duration REAL', 'session_id TEXT']) {
-    try { await db.execute(`ALTER TABLE tracking_events ADD COLUMN ${col}`); } catch { /* existe déjà */ }
+    try { await db.execute(`ALTER TABLE tracking_events ADD COLUMN ${col}`); } catch { /* already exists */ }
   }
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_te_uuid ON tracking_events(media_uuid)`);
   await db.execute(`CREATE INDEX IF NOT EXISTS idx_te_at ON tracking_events(viewed_at)`);
@@ -59,9 +59,9 @@ export async function ensureMediaTable(db: any) {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )
   `);
-  // migration douce des colonnes d'embed
+  // soft migration of the embed columns
   for (const col of ['stream_lib TEXT', 'stream_guid TEXT']) {
-    try { await db.execute(`ALTER TABLE media ADD COLUMN ${col}`); } catch { /* existe déjà */ }
+    try { await db.execute(`ALTER TABLE media ADD COLUMN ${col}`); } catch { /* already exists */ }
   }
 }
 

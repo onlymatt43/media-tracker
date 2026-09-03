@@ -9,8 +9,8 @@ async function getDb() {
   return createClient({ url: TURSO_URL!, authToken: TURSO_TOKEN });
 }
 
-// Lien tracké : /m/<uuid>[?s=source]
-//   → log la vue (riche), puis redirige (302) vers l'URL du média.
+// Tracked link: /m/<uuid>[?s=source]
+//   → logs the (rich) view, then redirects (302) to the media URL.
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
