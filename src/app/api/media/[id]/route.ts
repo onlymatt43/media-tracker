@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ensureMediaTable } from '../../../../lib/events';
 import { getDb } from '../../../../lib/db';
 
-// Lecture PUBLIQUE d'un média (pour l'embarquer sur un site : WP/Breakdance, etc.).
-// Renvoie de quoi construire l'embed + le pixel/lien de tracking.
+// PUBLIC read of a media item (to embed it on a site: WP/Breakdance, etc.).
+// Returns what is needed to build the embed + the tracking pixel/link.
 // GET /api/media/<uuid>
 export async function GET(
   _req: NextRequest,
@@ -47,7 +47,7 @@ export async function GET(
       title: m.title,
       category: m.category,
       url: m.url,          // page/redirect
-      embed,               // à mettre dans un <iframe> (stream) ou <img>/<video> (fichier)
+      embed,               // goes into an <iframe> (stream) or <img>/<video> (file)
       pixel: `/api/track/${m.uuid}`,
       link: `/m/${m.uuid}`,
     }, {

@@ -1,44 +1,44 @@
 # media-tracker
 
-Tracking et analytics des médias ONLYMATT / OM43, par UUID. App Next.js (App Router) + Turso
-(libSQL), déployée sur Vercel. L'URL de base vit dans `../pipeline/targets.json > tracker.base_url`
-— jamais recopiée ici.
+Tracking and analytics for ONLYMATT / OM43 media, keyed by UUID. Next.js app (App Router) + Turso
+(libSQL), deployed on Vercel. The base URL lives in `../pipeline/targets.json > tracker.base_url`
+— never copied here.
 
-> README réécrit le 2026-08-17 : l'ancien décrivait le flux `tracker.command` (sidecars XMP),
-> retiré en quarantaine — l'enregistrement passe par le pipeline depuis.
+> README rewritten on 2026-08-17: the previous one described the `tracker.command` flow (XMP sidecars),
+> since moved to quarantine — registration has gone through the pipeline since then.
 
-## Comment un média entre ici
+## How a media item gets here
 
-Le pipeline (`../pipeline/tracker.py`, appelé automatiquement après `deliver`) fait un
-`POST /api/media` (auth `x-admin-secret`) : `uuid → url` + contexte (type, titre, catégorie,
-crédits, refs Stream). `python3 ../pipeline/tracker.py backfill` rattrape les médias déjà livrés.
+The pipeline (`../pipeline/tracker.py`, called automatically after `deliver`) performs a
+`POST /api/media` (auth `x-admin-secret`): `uuid → url` + context (type, title, category,
+credits, Stream refs). `python3 ../pipeline/tracker.py backfill` catches up media already delivered.
 
 ## Endpoints
 
-| Endpoint | Rôle |
+| Endpoint | Role |
 |---|---|
-| `GET /m/<uuid>[?s=source]` | lien tracké : logue la vue riche puis redirige (302) vers l'URL du média |
-| `GET /api/track/<uuid>` | pixel invisible (GIF 1x1) pour les vues passives sur une page HTML |
-| `POST /api/event/<uuid>` | beacon d'engagement vidéo (play/pause/ended, quartiles 25-100 %) — envoyé par `om-track.js` du plugin WP |
-| `GET /api/media/<uuid>` | lecture PUBLIQUE : de quoi construire l'embed (iframe Stream / fichier) + pixel + lien |
-| `POST /api/media` | enregistre/met à jour un média (pipeline, auth `x-admin-secret`) |
-| `GET /api/admin` | tableau de bord JSON (auth `x-admin-secret`) : totaux, par source/appareil/pays/jour, engagement vidéo (play-rate, complétion, watch-time) ; `?uuid=…` pour un média, `&bots=1` pour inclure les bots |
-| `/dashboard.html` | tableau de bord visuel (Chart.js) au-dessus de `/api/admin` — le secret reste dans le navigateur |
+| `GET /m/<uuid>[?s=source]` | tracked link: logs the rich view, then redirects (302) to the media URL |
+| `GET /api/track/<uuid>` | invisible pixel (1x1 GIF) for passive views on an HTML page |
+| `POST /api/event/<uuid>` | video engagement beacon (play/pause/ended, 25-100 % quartiles) — sent by `om-track.js` from the WP plugin |
+| `GET /api/media/<uuid>` | PUBLIC read: what is needed to build the embed (Stream iframe / file) + pixel + link |
+| `POST /api/media` | registers/updates a media item (pipeline, auth `x-admin-secret`) |
+| `GET /api/admin` | JSON dashboard (auth `x-admin-secret`): totals, by source/device/country/day, video engagement (play-rate, completion, watch-time); `?uuid=…` for one media item, `&bots=1` to include bots |
+| `/dashboard.html` | visual dashboard (Chart.js) on top of `/api/admin` — the secret stays in the browser |
 
-Chaque événement logué : appareil, OS, navigateur, bot/humain, géo (headers Vercel), referer,
-langue, source/UTM, et pour la vidéo : `event_type`, position, durée, session.
+Every logged event: device, OS, browser, bot/human, geo (Vercel headers), referer,
+language, source/UTM, and for video: `event_type`, position, duration, session.
 
-## Variables d'environnement
+## Environment variables
 
 | Variable | Description |
 |---|---|
-| `TURSO_DATABASE_URL` | URL de la DB Turso |
-| `TURSO_AUTH_TOKEN` | token d'auth Turso |
-| `ADMIN_SECRET` | secret pour `/api/admin` et `POST /api/media` (= `TRACKER_ADMIN_SECRET` côté pipeline) |
-| `BUNNY_STREAM_EMBED_HOST` | host d'embed Bunny Stream pour `GET /api/media` — absent = erreur explicite, jamais d'iframe cassé |
+| `TURSO_DATABASE_URL` | Turso DB URL |
+| `TURSO_AUTH_TOKEN` | Turso auth token |
+| `ADMIN_SECRET` | secret for `/api/admin` and `POST /api/media` (= `TRACKER_ADMIN_SECRET` on the pipeline side) |
+| `BUNNY_STREAM_EMBED_HOST` | Bunny Stream embed host for `GET /api/media` — missing = explicit error, never a broken iframe |
 
-## Données (Turso)
+## Data (Turso)
 
-- `media` — `uuid` (PK) → url, type, titre, catégorie, owner, collaborators, refs Stream.
-- `tracking_events` — un enregistrement par vue/clic/beacon ; migrations douces (colonnes ajoutées
-  au vol, `event_type='view'` par défaut pour l'historique).
+- `media` — `uuid` (PK) → url, type, title, category, owner, collaborators, Stream refs.
+- `tracking_events` — one record per view/click/beacon; soft migrations (columns added
+  on the fly, `event_type='view'` by default for historical rows).

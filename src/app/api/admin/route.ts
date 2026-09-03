@@ -9,11 +9,11 @@ async function getDb() {
   return createClient({ url: TURSO_URL!, authToken: TURSO_TOKEN });
 }
 
-// v2 analytics (PASSATION-wp-analytics-v2.md, brique B3) : plays/complétion/watch-time
-// à partir des mêmes tracking_events que les vues/clics — `event_type` distingue tout.
-// `views` = pixel de vue (event_type='view', défaut des anciennes lignes) ; `plays` =
-// sessions distinctes ayant démarré la vidéo ; complétion = sessions distinctes ayant
-// franchi chaque quartile ; watch-time = moyenne, par session, de la position max atteinte.
+// v2 analytics (PASSATION-wp-analytics-v2.md, block B3): plays/completion/watch-time
+// computed from the same tracking_events as views/clicks — `event_type` tells them apart.
+// `views` = view pixel (event_type='view', the default for older rows); `plays` =
+// distinct sessions that started the video; completion = distinct sessions that
+// crossed each quartile; watch-time = per-session average of the max position reached.
 const MEDIA_STATS_CTE = `
   WITH media_stats AS (
     SELECT t.media_uuid,
@@ -35,7 +35,7 @@ const MEDIA_STATS_CTE = `
   )
 `;
 
-// Ratios calculés côté JS (division par zéro plus simple à garder à null qu'en SQL).
+// Ratios are computed in JS (keeping division by zero as null is simpler here than in SQL).
 function withEngagement(row: any) {
   const plays = Number(row.plays) || 0;
   const views = Number(row.views) || 0;

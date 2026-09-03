@@ -4,8 +4,8 @@ import { getDb } from '../../../lib/db';
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
-// Enregistre (ou met à jour) un média : uuid → url + contexte.
-// Appelé par le pipeline au deliver. Auth : header x-admin-secret.
+// Registers (or updates) a media item: uuid → url + context.
+// Called by the pipeline on deliver. Auth: x-admin-secret header.
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-admin-secret');
   if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
