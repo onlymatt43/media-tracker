@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ONLYMATT — Tableau de bord tracking</title>
+<title>ONLYMATT — Tracking dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js"></script>
 <style>
   :root{ --bg:#0b0f14; --panel:#131a22; --line:#1f2a35; --ink:#e7edf3; --mut:#8aa0b2; --accent:#10b981; --accent2:#06b6d4; --warn:#f59e0b; }
@@ -48,14 +48,14 @@
 <body>
 <div class="wrap">
   <h1>ONLYMATT<span class="ca">.ca</span> — Tracking</h1>
-  <p class="sub">Données live depuis <code>/api/admin</code>. Le secret reste dans ce navigateur (localStorage), jamais envoyé ailleurs.</p>
+  <p class="sub">Live data from <code>/api/admin</code>. The secret stays in this browser (localStorage) and is sent nowhere else.</p>
 
   <div class="bar">
-    <input id="base" placeholder="Base (vide = même domaine)" size="26">
+    <input id="base" placeholder="Base (empty = same origin)" size="26">
     <input id="secret" type="password" placeholder="TRACKER_ADMIN_SECRET" size="24">
-    <label><input type="checkbox" id="bots"> inclure les bots</label>
-    <button onclick="save();load()">Charger</button>
-    <button class="ghost" onclick="load()">↻ Rafraîchir</button>
+    <label><input type="checkbox" id="bots"> include bots</label>
+    <button onclick="save();load()">Load</button>
+    <button class="ghost" onclick="load()">↻ Refresh</button>
     <div class="spacer"></div>
     <span id="stamp" class="sub" style="margin:0"></span>
   </div>
@@ -63,7 +63,7 @@
   <div id="content"></div>
 
   <footer class="sub" style="margin-top:24px">
-    <a href="/privacy?lang=fr" style="color:var(--mut)">Politique de confidentialité</a>
+    <a href="/privacy" style="color:var(--mut)">Privacy policy</a>
   </footer>
 </div>
 
@@ -97,49 +97,49 @@ const esc = s => (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&
 
 async function load(){
   const c = $('content');
-  if(!$('secret').value.trim()){ c.innerHTML = '<div class="msg">Entre ton secret puis « Charger ».</div>'; return; }
-  c.innerHTML = '<div class="msg">Chargement…</div>';
+  if(!$('secret').value.trim()){ c.innerHTML = '<div class="msg">Enter your secret, then click Load.</div>'; return; }
+  c.innerHTML = '<div class="msg">Loading…</div>';
   try{
     const r = await apiFetch();
-    if(r.status===401){ c.innerHTML = '<div class="msg err">401 — secret invalide.</div>'; return; }
+    if(r.status===401){ c.innerHTML = '<div class="msg err">401 — invalid secret.</div>'; return; }
     if(!r.ok) throw new Error('HTTP '+r.status);
     const d = await r.json();
     render(d);
-    $('stamp').textContent = 'MAJ ' + new Date().toLocaleTimeString();
+    $('stamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
   }catch(e){
-    c.innerHTML = `<div class="msg err">Erreur: ${esc(e.message)}.<br><span class="sub">Si « Failed to fetch » : ouvre cette page depuis le domaine du tracker (même origine), pas en local.</span></div>`;
+    c.innerHTML = `<div class="msg err">Error: ${esc(e.message)}.<br><span class="sub">If the error is "Failed to fetch", open this page from the tracker's own domain (same origin), not from a local file.</span></div>`;
   }
 }
 
 function render(d){
-  const t = d.totaux || {};
+  const t = d.totals || {};
   const humans = (Number(t.total)||0) - (Number(t.bots)||0);
   mediasCache = d.medias || [];
   $('content').innerHTML = `
     <div class="kpis">
-      <div class="kpi"><div class="n">${humans.toLocaleString()}</div><div class="l">Événements (humains)</div></div>
-      <div class="kpi"><div class="n">${(Number(t.medias)||0).toLocaleString()}</div><div class="l">Médias trackés</div></div>
-      <div class="kpi"><div class="n">${(Number(t.ips)||0).toLocaleString()}</div><div class="l">Visiteurs uniques (IP)</div></div>
-      <div class="kpi"><div class="n">${(Number(t.bots)||0).toLocaleString()}</div><div class="l">Bots filtrés</div></div>
+      <div class="kpi"><div class="n">${humans.toLocaleString()}</div><div class="l">Events (humans)</div></div>
+      <div class="kpi"><div class="n">${(Number(t.medias)||0).toLocaleString()}</div><div class="l">Tracked media</div></div>
+      <div class="kpi"><div class="n">${(Number(t.ips)||0).toLocaleString()}</div><div class="l">Unique visitors (IP)</div></div>
+      <div class="kpi"><div class="n">${(Number(t.bots)||0).toLocaleString()}</div><div class="l">Filtered bots</div></div>
     </div>
     <div class="grid">
-      <div class="card"><h3>Activité (30 jours)</h3><div class="chartbox"><canvas id="cDay"></canvas></div></div>
-      <div class="card"><h3>Par appareil</h3><div class="chartbox"><canvas id="cDev"></canvas></div></div>
+      <div class="card"><h3>Activity (30 days)</h3><div class="chartbox"><canvas id="cDay"></canvas></div></div>
+      <div class="card"><h3>By device</h3><div class="chartbox"><canvas id="cDev"></canvas></div></div>
     </div>
     <div class="grid3">
-      <div class="card"><h3>Par source / plateforme</h3><div class="chartbox"><canvas id="cSrc"></canvas></div></div>
-      <div class="card"><h3>Par pays</h3><div class="chartbox"><canvas id="cCty"></canvas></div></div>
-      <div class="card"><h3>Play-rate (top médias)</h3><div class="chartbox"><canvas id="cPlay"></canvas></div></div>
+      <div class="card"><h3>By source / platform</h3><div class="chartbox"><canvas id="cSrc"></canvas></div></div>
+      <div class="card"><h3>By country</h3><div class="chartbox"><canvas id="cCty"></canvas></div></div>
+      <div class="card"><h3>Play rate (top media)</h3><div class="chartbox"><canvas id="cPlay"></canvas></div></div>
     </div>
     <div class="card">
-      <h3>Médias — clique une ligne pour le détail</h3>
+      <h3>Media — click a row for details</h3>
       <div style="overflow-x:auto"><table id="tbl"></table></div>
     </div>`;
 
-  drawLine('cDay', (d.par_jour||[]).slice().reverse(), 'd', 'n');
-  drawDoughnut('cDev', d.par_appareil||[]);
-  drawBar('cSrc', (d.par_source||[]).slice(0,10));
-  drawBar('cCty', (d.par_pays||[]).slice(0,10));
+  drawLine('cDay', (d.by_day||[]).slice().reverse(), 'd', 'n');
+  drawDoughnut('cDev', d.by_device||[]);
+  drawBar('cSrc', (d.by_source||[]).slice(0,10));
+  drawBar('cCty', (d.by_country||[]).slice(0,10));
   drawPlayRate('cPlay', mediasCache);
   renderTable();
 }
@@ -151,7 +151,7 @@ function renderTable(){
     const nb = (sortKey==='play_rate') ? (b.play_rate??-1) : (Number(vb)|| (typeof vb==='string'? vb: -1));
     if(na<nb) return sortDir; if(na>nb) return -sortDir; return 0;
   });
-  const cols = [['title','Média','l'],['category','Cat.','l'],['views','Vues'],['plays','Plays'],['play_rate','Play-rate'],['watch_time_avg','Watch'],['q100','Fini'],['completion_rate','Complétion 25/50/75/100']];
+  const cols = [['title','Media','l'],['category','Cat.','l'],['views','Views'],['plays','Plays'],['play_rate','Play rate'],['watch_time_avg','Watch'],['q100','Finished'],['completion_rate','Completion 25/50/75/100']];
   const head = cols.map(([k,lbl,cls])=>`<th class="${cls||''}" onclick="sortBy('${k}')">${lbl}${sortKey===k?(sortDir<0?' ▾':' ▴'):''}</th>`).join('');
   const body = rows.map(m=>{
     const cr = m.completion_rate||{};
@@ -166,13 +166,13 @@ function renderTable(){
       <td>${fmtPct((m.completion_rate||{}).q100)}</td>
       <td>${comp}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="8" class="msg">Aucun média encore tracké.</td></tr>`;
+  }).join('') || `<tr><td colspan="8" class="msg">No media tracked yet.</td></tr>`;
   $('tbl').innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
 }
 function sortBy(k){ if(sortKey===k) sortDir=-sortDir; else { sortKey=k; sortDir=-1; } renderTable(); }
 
 async function detail(uuid){
-  const dlg=$('detail'); $('detailBody').innerHTML='<div class="msg">Chargement…</div>'; dlg.showModal();
+  const dlg=$('detail'); $('detailBody').innerHTML='<div class="msg">Loading…</div>'; dlg.showModal();
   try{
     const r = await apiFetch('&uuid='+encodeURIComponent(uuid));
     const d = await r.json();
@@ -182,15 +182,15 @@ async function detail(uuid){
       <h2>${esc((d.media&&d.media.title)||uuid)}</h2>
       <p class="sub">${esc((d.media&&d.media.category)||'')} · ${uuid}</p>
       <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi"><div class="n">${Number(e.views)||0}</div><div class="l">Vues</div></div>
+        <div class="kpi"><div class="n">${Number(e.views)||0}</div><div class="l">Views</div></div>
         <div class="kpi"><div class="n">${Number(e.plays)||0}</div><div class="l">Plays</div></div>
-        <div class="kpi"><div class="n">${fmtPct(e.play_rate)}</div><div class="l">Play-rate</div></div>
+        <div class="kpi"><div class="n">${fmtPct(e.play_rate)}</div><div class="l">Play rate</div></div>
         <div class="kpi"><div class="n">${fmtSec(e.watch_time_avg)}</div><div class="l">Watch-time</div></div>
       </div>
-      <div class="card" style="margin-bottom:12px"><h3>Complétion</h3>
+      <div class="card" style="margin-bottom:12px"><h3>Completion</h3>
         <div>25% ${fmtPct(cr.q25)} · 50% ${fmtPct(cr.q50)} · 75% ${fmtPct(cr.q75)} · 100% ${fmtPct(cr.q100)}</div></div>
-      <div class="card"><h3>Derniers événements</h3>${evts||'<span class="sub">aucun</span>'}</div>
-      <div style="text-align:right;margin-top:14px"><button class="ghost" onclick="detail_close()">Fermer</button></div>`;
+      <div class="card"><h3>Latest events</h3>${evts||'<span class="sub">none</span>'}</div>
+      <div style="text-align:right;margin-top:14px"><button class="ghost" onclick="detail_close()">Close</button></div>`;
   }catch(err){ $('detailBody').innerHTML=`<div class="msg err">${esc(err.message)}</div>`; }
 }
 function detail_close(){ $('detail').close(); }

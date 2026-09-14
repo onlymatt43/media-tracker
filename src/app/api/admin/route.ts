@@ -99,11 +99,11 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    totaux: totals.rows[0] || {},
-    par_source: bySource.rows,
-    par_appareil: byDevice.rows,
-    par_pays: byCountry.rows,
-    par_jour: byDay.rows,
+    totals: totals.rows[0] || {},
+    by_source: bySource.rows,
+    by_device: byDevice.rows,
+    by_country: byCountry.rows,
+    by_day: byDay.rows,
     medias: perMedia.rows.map(withEngagement),
   });
 }
