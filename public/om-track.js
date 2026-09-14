@@ -1,5 +1,6 @@
 /**
- * om-track.js — video engagement beacons (play/pause/ended + 25/50/75/100% completion).
+ * om-track.js — video engagement beacons (play/pause/ended + the completion milestones the
+ * host page passes in OM_TRACK_CFG.quartiles).
  * Targets any <video data-om-uuid="…"> on the page, self-hosted or plugin-embedded.
  * Non-blocking: silently does nothing if sendBeacon or the config are unavailable.
  */
