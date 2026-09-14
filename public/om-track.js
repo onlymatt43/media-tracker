@@ -8,6 +8,9 @@
 
   var cfg = window.OM_TRACK_CFG;
   if (!cfg || !cfg.base || !navigator.sendBeacon) { return; }
+  // Completion milestones come from the host page's config (localized by the plugin);
+  // absent → no completion events, play/pause/ended still fire.
+  var quartiles = Array.isArray(cfg.quartiles) ? cfg.quartiles : [];
 
   var SESSION_KEY = 'om_track_session';
   var session = sessionStorage.getItem(SESSION_KEY);
@@ -46,7 +49,7 @@
     video.addEventListener('timeupdate', function () {
       if (!video.duration) { return; }
       var pct = (video.currentTime / video.duration) * 100;
-      [25, 50, 75, 100].forEach(function (q) {
+      quartiles.forEach(function (q) {
         if (pct >= q && !fired[q]) {
           fired[q] = true;
           send(uuid, 'q' + q, video.currentTime, video.duration);
