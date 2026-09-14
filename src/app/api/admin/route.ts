@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '../../../lib/db';
 
-const TURSO_URL = process.env.TURSO_DATABASE_URL;
-const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN;
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
-
-async function getDb() {
-  const { createClient } = await import('@libsql/client');
-  return createClient({ url: TURSO_URL!, authToken: TURSO_TOKEN });
-}
 
 // v2 analytics (PASSATION-wp-analytics-v2.md, block B3): plays/completion/watch-time
 // computed from the same tracking_events as views/clicks — `event_type` tells them apart.

@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDb } from '../../../../lib/db';
 import { ensureEventsTable, logEvent } from '../../../../lib/events';
-
-const TURSO_URL = process.env.TURSO_DATABASE_URL;
-const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN;
-
-async function getDb() {
-  const { createClient } = await import('@libsql/client');
-  return createClient({ url: TURSO_URL!, authToken: TURSO_TOKEN });
-}
 
 // Tracking pixel: <img src="/api/track/<uuid>"> on an HTML page (passive view).
 export async function GET(
