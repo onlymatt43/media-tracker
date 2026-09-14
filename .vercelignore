@@ -1,0 +1,5 @@
+# Local environment files hold real secrets. A deploy from this machine (vercel --prod)
+# uploads every file not listed here, so they are excluded: production reads its
+# configuration from the Vercel project environment variables.
+.env*
+!.env.example
