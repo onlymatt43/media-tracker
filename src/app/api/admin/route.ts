@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { adminAuthError, authorizeAdmin } from '../../../lib/admin-auth';
 import { getDb } from '../../../lib/db';
-
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
 
 // v2 analytics (PASSATION-wp-analytics-v2.md, block B3): plays/completion/watch-time
 // computed from the same tracking_events as views/clicks — `event_type` tells them apart.
@@ -45,12 +44,11 @@ function withEngagement(row: any) {
 // GET /api/admin             → global dashboard (humans, by source/device/country…)
 // GET /api/admin?uuid=...    → latest events + engagement for one media item
 // &bots=1 to include bots (excluded by default)
-// Auth: `x-admin-secret` header only (query strings end up in logs and browser history).
+// Auth: `x-admin-secret` header (pipeline, scripts) or the admin session cookie
+// (the dashboard) — never a query string (src/lib/admin-auth.ts).
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret');
-  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = adminAuthError(authorizeAdmin(req, { allowSession: true }));
+  if (denied) return denied;
 
   const db = await getDb();
   const includeBots = req.nextUrl.searchParams.get('bots') === '1';

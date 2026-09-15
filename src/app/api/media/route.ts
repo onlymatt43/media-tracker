@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ensureMediaTable } from '../../../lib/events';
+import { adminAuthError, authorizeAdmin } from '../../../lib/admin-auth';
 import { getDb } from '../../../lib/db';
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET;
-
 // Registers (or updates) a media item: uuid → url + context.
-// Called by the pipeline on deliver. Auth: x-admin-secret header.
+// Called by the pipeline on deliver. Auth: x-admin-secret header only — no
+// browser writes here, so the dashboard session is deliberately not accepted.
 export async function POST(req: NextRequest) {
-  const secret = req.headers.get('x-admin-secret');
-  if (!ADMIN_SECRET || secret !== ADMIN_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const denied = adminAuthError(authorizeAdmin(req, { allowSession: false }));
+  if (denied) return denied;
 
   let body: any;
   try {
