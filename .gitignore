@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# …and the template is exactly that opt-in: it holds no value, only the names
+# and what each one is for. Without it in the repository, a fresh clone has no
+# way to know what this system needs to run.
+!.env.example
 
 # vercel
 .vercel
